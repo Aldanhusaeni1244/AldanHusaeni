@@ -1,0 +1,8 @@
+{
+  "name": "Nexus POS - Intelligent Retail System",
+  "description": "A comprehensive Point of Sale system with AI-driven insights, real-time inventory management, barcode simulation, and detailed financial reporting.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}
