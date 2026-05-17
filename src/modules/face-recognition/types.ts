@@ -1,6 +1,6 @@
 
-export interface MemberDetectedEvent {
-  member_id: string;
+export interface DetectionEvent {
+  entity_id: string;
   confidence: number;
 }
 

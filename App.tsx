@@ -17,7 +17,7 @@ import {
   ShoppingCart,
   Bot
 } from 'lucide-react';
-import { View, Product, CartItem, Transaction, Employee, UserRole, Customer, Campaign } from './types';
+import { View, Product, CartItem, Transaction, Employee, UserRole, Customer, Campaign, Attendance } from './types';
 import { INITIAL_PRODUCTS, INITIAL_EMPLOYEES, INITIAL_CUSTOMERS, INITIAL_CAMPAIGNS } from './constants';
 import DashboardView from './components/DashboardView';
 import InventoryView from './components/InventoryView';
@@ -28,6 +28,7 @@ import LandingPage from './components/LandingPage';
 import CustomersView from './components/CustomersView';
 import POSView from './components/POSView';
 import AIPOSView from './components/AIPOSView';
+import AttendanceView from './components/AttendanceView';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<View>('DASHBOARD');
@@ -51,6 +52,10 @@ const App: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>(() => {
     const saved = localStorage.getItem('nexus_employees');
     return saved ? JSON.parse(saved) : INITIAL_EMPLOYEES;
+  });
+  const [attendances, setAttendances] = useState<Attendance[]>(() => {
+    const saved = localStorage.getItem('nexus_attendances');
+    return saved ? JSON.parse(saved) : [];
   });
   const [currentUser, setCurrentUser] = useState<Employee | null>(employees[0]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -76,6 +81,10 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('nexus_employees', JSON.stringify(employees));
   }, [employees]);
+
+  useEffect(() => {
+    localStorage.setItem('nexus_attendances', JSON.stringify(attendances));
+  }, [attendances]);
 
   const handleCompleteTransaction = useCallback((transaction: Transaction) => {
     // Update Stock
@@ -141,6 +150,7 @@ const App: React.FC = () => {
   const menuItems = [
     { id: 'POS', label: 'Kasir', icon: ShoppingCart },
     { id: 'AIPOS', label: 'AI Assistant', icon: Bot },
+    { id: 'ATTENDANCE', label: 'Presensi', icon: UserCircle },
     { id: 'DASHBOARD', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'HISTORY', label: 'Transaksi', icon: History },
     { id: 'INVENTORY', label: 'Produk & Stok', icon: Package },
@@ -276,6 +286,13 @@ const App: React.FC = () => {
             {activeView === 'PROMOS' && <DashboardView key="promos" currentUser={currentUser!} transactions={transactions} products={products} customers={customers} campaigns={campaigns} setCampaigns={setCampaigns} setCustomers={setCustomers} initialTab="CAMPAIGNS" />}
             {activeView === 'EMPLOYEES' && <EmployeesView employees={employees} setEmployees={setEmployees} />}
           {activeView === 'REPORTS' && <ReportsView transactions={transactions} products={products} />}
+          {activeView === 'ATTENDANCE' && (
+            <AttendanceView 
+              employees={employees} 
+              attendances={attendances} 
+              onRecordAttendance={(att) => setAttendances(prev => [...prev, att])} 
+            />
+          )}
           {(activeView === 'OUTLETS' || activeView === 'SETTINGS') && (
             <div className="flex flex-col items-center justify-center h-full text-slate-400 italic">
                Modul {activeView.toLowerCase()} sedang dalam pengembangan.

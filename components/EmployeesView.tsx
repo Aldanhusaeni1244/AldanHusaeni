@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Employee, UserRole } from '../types';
-import { Shield, UserPlus, Edit3, Trash2, X, Key, CheckCircle2, Mail, Phone } from 'lucide-react';
+import { Shield, UserPlus, Edit3, Trash2, X, Key, CheckCircle2, Mail, Phone, UserCheck } from 'lucide-react';
+import FaceDetectionScanner from '../src/modules/face-recognition/FaceDetectionScanner';
 
 interface Props {
   employees: Employee[];
@@ -10,32 +11,50 @@ interface Props {
 const EmployeesView: React.FC<Props> = ({ employees, setEmployees }) => {
   const [showModal, setShowModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [enrollStep, setEnrollStep] = useState(1);
   const [formData, setFormData] = useState<Partial<Employee>>({
     name: '',
     role: UserRole.ADMIN,
     status: 'ACTIVE',
-    pin: ''
+    pin: '',
+    hasEnrolledFace: false
   });
 
   const handleOpenModal = (emp?: Employee) => {
     if (emp) {
       setEditingEmployee(emp);
       setFormData(emp);
+      setEnrollStep(1); // Still might want to re-enroll
     } else {
       setEditingEmployee(null);
       setFormData({
         name: '',
         role: UserRole.ADMIN,
         status: 'ACTIVE',
-        pin: ''
+        pin: '',
+        hasEnrolledFace: false
       });
+      setEnrollStep(1);
     }
     setShowModal(true);
+  };
+
+  const handleNextStep = () => {
+    if (!formData.name || !formData.pin) return;
+    setEnrollStep(2);
+  };
+
+  const onFaceEnrolled = (descriptor: number[]) => {
+    setFormData(prev => ({ ...prev, hasEnrolledFace: true, faceDescriptor: descriptor }));
   };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.pin) return;
+    if (!formData.hasEnrolledFace && !editingEmployee) {
+      alert("Wajah karyawan harus didaftarkan!");
+      return;
+    }
 
     if (editingEmployee) {
       setEmployees(prev => prev.map(emp => emp.id === editingEmployee.id ? { ...emp, ...formData } as Employee : emp));
@@ -102,7 +121,15 @@ const EmployeesView: React.FC<Props> = ({ employees, setEmployees }) => {
                 </div>
               </div>
               <div className="pt-12 mb-4">
-                <h3 className="text-lg font-bold text-slate-800">{emp.name}</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-slate-800">{emp.name}</h3>
+                  {emp.hasEnrolledFace && (
+                    <div className="flex items-center gap-1 bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full border border-amber-100">
+                      <UserCheck size={10} />
+                      <span className="text-[8px] font-black uppercase">Face ID</span>
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 text-xs text-slate-500 font-medium mt-1">
                   <Shield size={14} className="text-indigo-500" />
                   <span className="uppercase tracking-widest">{emp.role}</span>
@@ -156,70 +183,106 @@ const EmployeesView: React.FC<Props> = ({ employees, setEmployees }) => {
               </div>
 
               <form onSubmit={handleSave} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={formData.name || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 font-bold outline-none"
-                    placeholder="Nama Karyawan"
-                  />
-                </div>
+                {enrollStep === 1 ? (
+                  <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={formData.name || ''}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 font-bold outline-none"
+                        placeholder="Nama Karyawan"
+                      />
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Role</label>
-                    <select 
-                      value={formData.role}
-                      onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as UserRole }))}
-                      className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 font-bold outline-none text-sm"
-                    >
-                      <option value={UserRole.ADMIN}>ADMIN</option>
-                    </select>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Role</label>
+                        <select 
+                          value={formData.role}
+                          onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as UserRole }))}
+                          className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 font-bold outline-none text-sm"
+                        >
+                          <option value={UserRole.ADMIN}>ADMIN</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status</label>
+                        <select 
+                          value={formData.status}
+                          onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+                          className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 font-bold outline-none text-sm"
+                        >
+                          <option value="ACTIVE">ACTIVE</option>
+                          <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">PIN Akses (4 Digit)</label>
+                      <input 
+                        type="password" 
+                        required
+                        maxLength={4}
+                        value={formData.pin || ''}
+                        onChange={(e) => setFormData(prev => ({ ...prev, pin: e.target.value.replace(/\D/g, '') }))}
+                        className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 font-mono font-bold outline-none tracking-[1em]"
+                        placeholder="****"
+                      />
+                    </div>
+
+                    <div className="flex gap-4 pt-4">
+                      <button 
+                        type="button"
+                        onClick={() => setShowModal(false)}
+                        className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200"
+                      >
+                        Batal
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={handleNextStep}
+                        className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all"
+                      >
+                        Tahap Berikutnya
+                      </button>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status</label>
-                    <select 
-                      value={formData.status}
-                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
-                      className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 font-bold outline-none text-sm"
-                    >
-                      <option value="ACTIVE">ACTIVE</option>
-                      <option value="INACTIVE">INACTIVE</option>
-                    </select>
+                ) : (
+                  <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+                    <div className="mb-4">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block text-center">Registrasi Wajah (Enrollment)</label>
+                      <div className="rounded-[2rem] overflow-hidden border-2 border-indigo-100 p-1 bg-slate-50">
+                        <FaceDetectionScanner 
+                          employees={employees} 
+                          mode="ENROLLMENT" 
+                          onEnroll={onFaceEnrolled} 
+                        />
+                      </div>
+                      <p className="text-[9px] text-slate-400 text-center font-bold mt-3 leading-relaxed">Posisikan wajah karyawan di depan kamera hingga proses data selesai (100%).</p>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <button 
+                        type="button"
+                        onClick={() => setEnrollStep(1)}
+                        className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200"
+                      >
+                        Kembali
+                      </button>
+                      <button 
+                        type="submit"
+                        disabled={!formData.hasEnrolledFace}
+                        className={`flex-1 py-4 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl transition-all ${formData.hasEnrolledFace ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-100' : 'bg-slate-300 cursor-not-allowed'}`}
+                      >
+                        {editingEmployee ? 'Update Data' : 'Daftarkan Karyawan'}
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">PIN Akses (4 Digit)</label>
-                  <input 
-                    type="password" 
-                    required
-                    maxLength={4}
-                    value={formData.pin || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, pin: e.target.value.replace(/\D/g, '') }))}
-                    className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 font-mono font-bold outline-none tracking-[1em]"
-                    placeholder="****"
-                  />
-                </div>
-
-                <div className="flex gap-4 pt-4">
-                  <button 
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200"
-                  >
-                    Batal
-                  </button>
-                  <button 
-                    type="submit"
-                    className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all hover:-translate-y-0.5"
-                  >
-                    Simpan Staf
-                  </button>
-                </div>
+                )}
               </form>
             </div>
           </div>

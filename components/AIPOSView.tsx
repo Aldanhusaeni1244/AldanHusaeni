@@ -13,12 +13,10 @@ import {
   Command,
   Mic,
   ArrowRight,
-  UserCheck
+  User
 } from 'lucide-react';
 import { Product, CartItem, Transaction, Customer, Employee } from '../types';
 import QRISPaymentModal from './QRISPaymentModal';
-import FaceDetectionScanner from '../src/modules/face-recognition/FaceDetectionScanner';
-import { useFaceRecognition } from '../src/modules/face-recognition/useFaceRecognition';
 
 interface Props {
   products: Product[];
@@ -45,23 +43,9 @@ const AIPOSView: React.FC<Props> = ({ products, customers, currentUser, onComple
   const [pendingQRISData, setPendingQRISData] = useState<Transaction | null>(null);
   const [lastTransaction, setLastTransaction] = useState<Transaction | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showFaceID, setShowFaceID] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   const logEndRef = useRef<HTMLDivElement>(null);
-
-  useFaceRecognition(customers, (member) => {
-    setSelectedCustomer(member);
-    // Add a log entry for auto-detection
-    const log: CommandLog = {
-      id: `face-${Date.now()}`,
-      text: "AUTO-DETECT FACE",
-      status: 'SUCCESS',
-      message: `✔ Member terdeteksi: ${member.nickname}. Poin: ${member.points}`,
-      timestamp: new Date().toLocaleTimeString('id-ID')
-    };
-    setLogs(prev => [...prev, log]);
-  });
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -316,25 +300,11 @@ const AIPOSView: React.FC<Props> = ({ products, customers, currentUser, onComple
               <Sparkles size={16} className="text-amber-300" />
               <span className="text-[10px] font-black uppercase tracking-widest">Natural Language Processing Active</span>
             </div>
-            <button 
-              onClick={() => setShowFaceID(!showFaceID)}
-              className={`px-4 py-2 rounded-full border backdrop-blur-md flex items-center gap-2 transition-all ${showFaceID ? 'bg-emerald-500/30 border-emerald-400 text-emerald-100' : 'bg-white/10 border-white/20 text-white'}`}
-            >
-              <UserCheck size={16} />
-              <span className="text-[10px] font-black uppercase tracking-widest">{showFaceID ? 'Face ID Vision ON' : 'Turn on Face ID'}</span>
-            </button>
           </div>
           <div className="absolute top-0 right-0 p-12 opacity-10 -mr-16 -mt-16 pointer-events-none">
             <Bot size={240} />
           </div>
         </div>
-
-        {/* Face Recognition Module Slot */}
-        {showFaceID && (
-          <div className="animate-in zoom-in-95 duration-500">
-             <FaceDetectionScanner customers={customers} />
-          </div>
-        )}
 
         {/* Command History */}
         <div className="flex-1 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col overflow-hidden">
@@ -449,7 +419,7 @@ const AIPOSView: React.FC<Props> = ({ products, customers, currentUser, onComple
               <div className="flex items-center gap-2">
                 {selectedCustomer && (
                   <div className="px-3 py-1 bg-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-emerald-400">
-                    <UserCheck size={12} /> {selectedCustomer.nickname} recognized
+                    <User size={12} /> {selectedCustomer.nickname} recognized
                   </div>
                 )}
                 <span className="px-3 py-1 bg-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest">{cart.length} Jenis Produk</span>

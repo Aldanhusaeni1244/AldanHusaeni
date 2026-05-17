@@ -81,6 +81,17 @@ export interface Employee {
   status: 'ACTIVE' | 'INACTIVE';
   lastLogin: string;
   pin: string;
+  hasEnrolledFace?: boolean;
+  faceDescriptor?: number[];
 }
 
-export type View = 'LANDING' | 'DASHBOARD' | 'INVENTORY' | 'HISTORY' | 'EMPLOYEES' | 'REPORTS' | 'CUSTOMERS' | 'PROMOS' | 'OUTLETS' | 'SETTINGS' | 'POS' | 'AIPOS';
+export interface Attendance {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  timestamp: string;
+  type: 'IN' | 'OUT';
+  method: 'FACE' | 'MANUAL';
+}
+
+export type View = 'LANDING' | 'DASHBOARD' | 'INVENTORY' | 'HISTORY' | 'EMPLOYEES' | 'REPORTS' | 'CUSTOMERS' | 'PROMOS' | 'OUTLETS' | 'SETTINGS' | 'POS' | 'AIPOS' | 'ATTENDANCE';

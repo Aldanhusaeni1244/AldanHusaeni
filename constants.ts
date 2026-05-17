@@ -78,7 +78,10 @@ export const INITIAL_CAMPAIGNS: Campaign[] = [
 ];
 
 export const INITIAL_EMPLOYEES: Employee[] = [
-  { id: 'emp-01', name: 'Budi Santoso', role: UserRole.ADMIN, status: 'ACTIVE', lastLogin: '2023-10-27 08:30', pin: '1234' },
+  { id: 'emp-01', name: 'Budi Santoso', role: UserRole.ADMIN, status: 'ACTIVE', lastLogin: '2023-10-27 08:30', pin: '1234', hasEnrolledFace: true },
+  { id: 'emp-02', name: 'Siti Aminah', role: UserRole.ADMIN, status: 'ACTIVE', lastLogin: '2023-10-27 09:00', pin: '2222', hasEnrolledFace: true },
+  { id: 'emp-03', name: 'Rahmat Hidayat', role: UserRole.ADMIN, status: 'ACTIVE', lastLogin: '2023-10-27 07:45', pin: '3333', hasEnrolledFace: true },
+  { id: 'emp-04', name: 'Dewi Lestari', role: UserRole.ADMIN, status: 'ACTIVE', lastLogin: '2023-10-27 08:15', pin: '4444', hasEnrolledFace: true },
 ];
 
 export const CURRENCY = 'IDR';

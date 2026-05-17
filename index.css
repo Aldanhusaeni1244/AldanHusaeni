@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 /* Ensure root visibility and layout */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
 #root {
-  min-height: 100vh;
+  min-height: 100%;
   width: 100%;
   display: flex !important;
   flex-direction: column;
@@ -58,6 +63,16 @@
 @keyframes slideInFromLeft10 {
   from { opacity: 0; transform: translateX(-2.5rem); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scanMove {
+  0%, 100% { top: 20%; }
+  50% { top: 80%; }
+}
+
+.animate-scan-move {
+  animation: scanMove 3s ease-in-out infinite;
+  position: absolute;
 }
 
 /* Global Styles */

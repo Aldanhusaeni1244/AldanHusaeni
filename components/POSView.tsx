@@ -15,13 +15,10 @@ import {
   Printer,
   X,
   CheckCircle2,
-  AlertCircle,
-  UserCheck
+  AlertCircle
 } from 'lucide-react';
 import { Product, CartItem, Transaction, Customer, Employee } from '../types';
 import QRISPaymentModal from './QRISPaymentModal';
-import FaceDetectionScanner from '../src/modules/face-recognition/FaceDetectionScanner';
-import { useFaceRecognition } from '../src/modules/face-recognition/useFaceRecognition';
 
 interface Props {
   products: Product[];
@@ -34,7 +31,6 @@ const POSView: React.FC<Props> = ({ products, customers, currentUser, onComplete
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showScanner, setShowScanner] = useState(false);
-  const [showFaceID, setShowFaceID] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showQRISModal, setShowQRISModal] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
@@ -47,11 +43,8 @@ const POSView: React.FC<Props> = ({ products, customers, currentUser, onComplete
 
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
-  // Integrate Face Recognition Event Listener
-  useFaceRecognition(customers, (member) => {
-    setSelectedCustomer(member);
-    // Optional: play success sound
-  });
+  // Calculate values for discount logic
+  const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
   // Auto-focus manual input for USB Scanner support
   const manualInputRef = useRef<HTMLInputElement>(null);
@@ -132,7 +125,6 @@ const POSView: React.FC<Props> = ({ products, customers, currentUser, onComplete
     setCart(prev => prev.filter(item => item.id !== id));
   };
 
-  const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const tax = Math.round(subtotal * 0.1); // 10% tax
   const total = subtotal + tax - discount;
 
@@ -217,22 +209,9 @@ const POSView: React.FC<Props> = ({ products, customers, currentUser, onComplete
           >
             <Scan size={24} />
           </button>
-          <button 
-            onClick={() => setShowFaceID(!showFaceID)}
-            className={`p-3.5 rounded-2xl transition-all shadow-lg flex items-center gap-2 ${showFaceID ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-            title="Face Recognition Member"
-          >
-            <UserCheck size={24} />
-            {showFaceID && <span className="text-[10px] font-black uppercase tracking-widest hidden xl:block">Face ID Active</span>}
-          </button>
         </div>
 
-        {/* Face Recognition Module Slot */}
-        {showFaceID && (
-          <div className="animate-in slide-in-from-top-4 duration-500">
-            <FaceDetectionScanner customers={customers} />
-          </div>
-        )}
+        {/* Removed redundant slot here */}
 
         {/* Quick Search Results / Favorites */}
         <div className="flex-1 overflow-y-auto pr-2 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
@@ -344,18 +323,58 @@ const POSView: React.FC<Props> = ({ products, customers, currentUser, onComplete
 
       {/* Scanner Modal */}
       {showScanner && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden relative">
-            <button 
-              onClick={() => setShowScanner(false)}
-              className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full z-10"
-            >
-              <X size={24} className="text-slate-400" />
-            </button>
-            <div className="p-8">
-              <h3 className="text-2xl font-black italic text-slate-800 mb-2">Scan Barcode</h3>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-6 underline decoration-indigo-500 decoration-2">Arahkan kamera ke barcode produk</p>
-              <div id="reader" className="w-full overflow-hidden rounded-3xl border-4 border-slate-100 bg-slate-50"></div>
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[300] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden relative shadow-2xl animate-in zoom-in-95 duration-300">
+            {/* Header */}
+            <div className="p-8 pb-4">
+               <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
+                      <Scan size={20} />
+                    </div>
+                    <h3 className="text-2xl font-black italic text-slate-800">Scan Barcode</h3>
+                  </div>
+                  <button 
+                    onClick={() => setShowScanner(false)}
+                    className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
+                  >
+                    <X size={24} className="text-slate-600" />
+                  </button>
+               </div>
+               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-4 underline decoration-indigo-500 decoration-2 italic">Vision Engine Active</p>
+            </div>
+            
+            <div className="px-8 pb-8">
+              <div className="relative group overflow-hidden rounded-[2rem] border-4 border-slate-100 bg-black aspect-video flex items-center justify-center">
+                <div id="reader" className="w-full h-full"></div>
+                
+                {/* Visual Overlay - Frame */}
+                <div className="absolute inset-0 pointer-events-none bg-black/20 flex items-center justify-center">
+                   {/* Scanning Frame Corners */}
+                  <div className="absolute top-10 left-10 w-12 h-12 border-t-4 border-l-4 border-indigo-500 rounded-tl-xl shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
+                  <div className="absolute top-10 right-10 w-12 h-12 border-t-4 border-r-4 border-indigo-500 rounded-tr-xl shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
+                  <div className="absolute bottom-10 left-10 w-12 h-12 border-b-4 border-l-4 border-indigo-500 rounded-bl-xl shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
+                  <div className="absolute bottom-10 right-10 w-12 h-12 border-b-4 border-r-4 border-indigo-500 rounded-br-xl shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
+                  
+                  {/* Scanning Line Animation */}
+                  <div className="absolute left-10 right-10 h-1 bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,1)] animate-scan-move rounded-full"></div>
+                </div>
+                
+                {/* Tech Badge */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-indigo-600/90 backdrop-blur-md rounded-full border border-indigo-400/30 flex items-center gap-2 shadow-lg">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
+                  <span className="text-[9px] font-black text-white uppercase tracking-[0.25em]">Ready to scan</span>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2 text-indigo-600 font-bold text-[10px] uppercase tracking-widest">
+                  <div className="w-1 h-1 bg-indigo-600 rounded-full animate-bounce"></div>
+                  <span>Waiting for barcode detection</span>
+                  <div className="w-1 h-1 bg-indigo-600 rounded-full animate-bounce delay-75"></div>
+                </div>
+                <p className="text-[9px] font-medium text-slate-400 uppercase tracking-widest italic opacity-60">Pastikan pencahayaan cukup terang</p>
+              </div>
             </div>
           </div>
         </div>
@@ -396,19 +415,48 @@ const POSView: React.FC<Props> = ({ products, customers, currentUser, onComplete
 
                   <div>
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Pilih Pelanggan (Opsional)</label>
-                    <select 
-                      value={selectedCustomer?.id || ''}
-                      onChange={(e) => {
-                        const customer = customers.find(c => c.id === e.target.value);
-                        setSelectedCustomer(customer || null);
-                      }}
-                      className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 font-bold outline-none text-sm"
-                    >
-                      <option value="">Umum (Guest)</option>
-                      {customers.map(c => (
-                        <option key={c.id} value={c.id}>{c.nickname} ({c.id})</option>
-                      ))}
-                    </select>
+                    <div className="space-y-3">
+                      <select 
+                        value={selectedCustomer?.id || ''}
+                        onChange={(e) => {
+                          const customer = customers.find(c => c.id === e.target.value);
+                          setSelectedCustomer(customer || null);
+                          if (customer) {
+                            if (customer.tier === 'GOLD') setDiscount(Math.round(subtotal * 0.1));
+                            else if (customer.tier === 'SILVER') setDiscount(Math.round(subtotal * 0.05));
+                          } else {
+                            setDiscount(0);
+                          }
+                        }}
+                        className="w-full px-5 py-3.5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 font-bold outline-none text-sm"
+                      >
+                        <option value="">Umum (Guest)</option>
+                        {customers.map(c => (
+                          <option key={c.id} value={c.id}>{c.nickname} ({c.id})</option>
+                        ))}
+                      </select>
+                      
+                      {selectedCustomer && (
+                        <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center gap-3 animate-in slide-in-from-top-2">
+                           <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-black">
+                              {selectedCustomer.nickname.charAt(0)}
+                           </div>
+                           <div className="flex-1">
+                              <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{selectedCustomer.nickname}</p>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[9px] font-black bg-indigo-200 text-indigo-700 px-1.5 py-0.5 rounded leading-none uppercase">{selectedCustomer.tier}</span>
+                                <span className="text-[9px] font-bold text-slate-400">{selectedCustomer.points} Points</span>
+                              </div>
+                           </div>
+                           <button onClick={() => {
+                             setSelectedCustomer(null);
+                             setDiscount(0);
+                           }} className="p-1 hover:bg-indigo-100 rounded text-indigo-400">
+                             <X size={16} />
+                           </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 

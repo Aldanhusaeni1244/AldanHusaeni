@@ -1,17 +1,17 @@
 
-import { MemberDetectedEvent } from './types';
+import { DetectionEvent } from './types';
 
 export const FaceEvents = {
-  emit: (data: MemberDetectedEvent) => {
-    const event = new CustomEvent('member_detected', { detail: data });
+  emit: (data: DetectionEvent) => {
+    const event = new CustomEvent('entity_detected', { detail: data });
     window.dispatchEvent(event);
   },
-  subscribe: (callback: (data: MemberDetectedEvent) => void) => {
+  subscribe: (callback: (data: DetectionEvent) => void) => {
     const handler = (e: Event) => {
-      const customEvent = e as CustomEvent<MemberDetectedEvent>;
+      const customEvent = e as CustomEvent<DetectionEvent>;
       callback(customEvent.detail);
     };
-    window.addEventListener('member_detected', handler);
-    return () => window.removeEventListener('member_detected', handler);
+    window.addEventListener('entity_detected', handler);
+    return () => window.removeEventListener('entity_detected', handler);
   }
 };
