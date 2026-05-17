@@ -13,7 +13,9 @@ import {
   Gift,
   Store,
   Settings,
-  UserCircle
+  UserCircle,
+  ShoppingCart,
+  Bot
 } from 'lucide-react';
 import { View, Product, CartItem, Transaction, Employee, UserRole, Customer, Campaign } from './types';
 import { INITIAL_PRODUCTS, INITIAL_EMPLOYEES, INITIAL_CUSTOMERS, INITIAL_CAMPAIGNS } from './constants';
@@ -24,6 +26,8 @@ import EmployeesView from './components/EmployeesView';
 import ReportsView from './components/ReportsView';
 import LandingPage from './components/LandingPage';
 import CustomersView from './components/CustomersView';
+import POSView from './components/POSView';
+import AIPOSView from './components/AIPOSView';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<View>('DASHBOARD');
@@ -135,6 +139,8 @@ const App: React.FC = () => {
   }, []);
 
   const menuItems = [
+    { id: 'POS', label: 'Kasir', icon: ShoppingCart },
+    { id: 'AIPOS', label: 'AI Assistant', icon: Bot },
     { id: 'DASHBOARD', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'HISTORY', label: 'Transaksi', icon: History },
     { id: 'INVENTORY', label: 'Produk & Stok', icon: Package },
@@ -158,7 +164,7 @@ const App: React.FC = () => {
   const filteredMenuItems = menuItems;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex min-h-screen w-full overflow-hidden bg-slate-50">
       {/* Sidebar */}
       <aside className={`bg-slate-900 text-white transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'} flex flex-col shrink-0`}>
         <div className="p-6 flex items-center gap-3">
@@ -261,6 +267,8 @@ const App: React.FC = () => {
 
         {/* View Content */}
         <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
+            {activeView === 'POS' && <POSView products={products} customers={customers} currentUser={currentUser!} onCompleteTransaction={handleCompleteTransaction} />}
+            {activeView === 'AIPOS' && <AIPOSView products={products} customers={customers} currentUser={currentUser!} onCompleteTransaction={handleCompleteTransaction} />}
             {activeView === 'DASHBOARD' && <DashboardView key="dashboard" currentUser={currentUser!} transactions={transactions} products={products} customers={customers} campaigns={campaigns} setCampaigns={setCampaigns} setCustomers={setCustomers} initialTab="INSIGHTS" />}
             {activeView === 'INVENTORY' && <InventoryView products={products} setProducts={setProducts} />}
             {activeView === 'HISTORY' && <HistoryView transactions={transactions} />}

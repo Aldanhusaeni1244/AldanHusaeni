@@ -48,7 +48,17 @@ const HistoryView: React.FC<Props> = ({ transactions }) => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="font-black text-slate-800 tracking-tight">{txn.id}</span>
-                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100">Lunas</span>
+                  {txn.paymentStatus === 'PAID' || !txn.paymentStatus ? (
+                    <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100">Lunas</span>
+                  ) : (
+                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${
+                      txn.paymentStatus === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' : 
+                      'bg-red-50 text-red-700 border-red-100'
+                    }`}>{txn.paymentStatus}</span>
+                  )}
+                  {txn.paymentReference && (
+                    <span className="text-[9px] font-mono font-bold text-slate-300 uppercase tracking-tighter">REF: {txn.paymentReference}</span>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500 font-medium">
                   <span className="flex items-center gap-2"><Calendar size={14} className="text-slate-400" /> {new Date(txn.date).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}</span>

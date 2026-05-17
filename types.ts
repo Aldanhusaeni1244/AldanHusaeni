@@ -31,6 +31,8 @@ export interface Transaction {
   cashierId: string;
   cashierName: string;
   customerId?: string;
+  paymentStatus?: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED';
+  paymentReference?: string;
   feedback?: {
     rating: number;
     comment: string;
@@ -81,4 +83,4 @@ export interface Employee {
   pin: string;
 }
 
-export type View = 'LANDING' | 'DASHBOARD' | 'INVENTORY' | 'HISTORY' | 'EMPLOYEES' | 'REPORTS' | 'CUSTOMERS' | 'PROMOS' | 'OUTLETS' | 'SETTINGS';
+export type View = 'LANDING' | 'DASHBOARD' | 'INVENTORY' | 'HISTORY' | 'EMPLOYEES' | 'REPORTS' | 'CUSTOMERS' | 'PROMOS' | 'OUTLETS' | 'SETTINGS' | 'POS' | 'AIPOS';

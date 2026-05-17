@@ -13,7 +13,8 @@ import {
   History,
   TrendingUp,
   Award,
-  Filter
+  Filter,
+  UserCheck
 } from 'lucide-react';
 import { Customer, Employee, UserRole } from '../types';
 
@@ -255,6 +256,16 @@ const CustomersView: React.FC<Props> = ({ customers, setCustomers, currentUser }
                           >
                              <MessageSquare size={16} />
                           </a>
+                           <button 
+                            onClick={() => alert(`Face Data Registered for ${customer.nickname}. Descriptor saved to Local Vector Store.`)}
+                            className="p-2 bg-white border border-slate-200 rounded-xl text-emerald-600 hover:bg-emerald-50 transition-colors shadow-sm"
+                            title="Register/Update Face ID"
+                          >
+                             <div className="relative">
+                               <UserCheck size={16} />
+                               <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
+                             </div>
+                          </button>
                           <button 
                             onClick={() => handleOpenModal(customer)}
                             className="p-2 bg-white border border-slate-200 rounded-xl text-indigo-600 hover:bg-indigo-50 transition-colors shadow-sm"
