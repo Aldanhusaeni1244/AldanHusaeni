@@ -29,39 +29,18 @@ const QRISPaymentModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, amount,
       return;
     }
 
-    const fetchQR = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetch('/api/payment/qris', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount, invoiceId })
-        });
-        
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.message || 'Gateway pembayaran sedang bermasalah');
-        }
-        
-        const data = await response.json();
-        if (data.status === 'success') {
-          setQrisString(data.qr_string);
-        } else {
-          throw new Error(data.message || 'Gagal membuat QRIS');
-        }
-      } catch (err: any) {
-        console.error("QRIS Fetch Error:", err);
-        // Fallback to simulation if desired, but here we show a warning status
-        const fallbackQR = `00020101021226300016COM.DANA.WWW0118936009153020610125204000053033605408${amount}.005802ID5912NEXUS STORE 6005JAKARTA62070703${invoiceId}6304`;
-        setQrisString(fallbackQR);
-        setError("Menggunakan mode demo (Gateway Offline)");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchQR();
+    // Mode Simulasi DANA
+    setIsLoading(true);
+    setError(null);
+    
+    // Gunakan URL DANA yang memicu redirect ke aplikasi DANA
+    // Ini berfungsi sebagai simulation link yang bisa discan kamera HP
+    const danaSimulationURL = 'https://link.dana.id/qr/simulasi-pembayaran-nexus';
+    setQrisString(danaSimulationURL);
+    
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
 
     // Simulate Payment Detection (Wait between 5-15 seconds for "automatic" detection)
     const detectionTimer = setTimeout(() => {
@@ -124,7 +103,7 @@ const QRISPaymentModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, amount,
         {/* Header */}
         <div className="p-8 text-center border-b border-slate-100">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-black italic text-slate-800">PEMBAYARAN QRIS</h3>
+            <h3 className="text-xl font-black italic text-slate-800">SIMULASI DANA</h3>
             <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
               <X size={20} className="text-slate-400" />
             </button>
@@ -133,8 +112,8 @@ const QRISPaymentModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, amount,
           <div className="bg-indigo-50 p-4 rounded-2xl flex items-center justify-center gap-3 mb-4">
              <Smartphone size={24} className="text-indigo-600" />
              <div className="text-left">
-                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none mb-1">Scan Bayar</p>
-                <p className="text-xs font-bold text-slate-700">Gunakan Dana, OVO, GoPay, LinkAja</p>
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none mb-1">DANA REDIRECT</p>
+                <p className="text-xs font-bold text-slate-700">Scan QR untuk membuka aplikasi DANA</p>
              </div>
           </div>
 
@@ -169,7 +148,7 @@ const QRISPaymentModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, amount,
             {isLoading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-indigo-600">
                 <Loader2 size={48} className="animate-spin mb-2" />
-                <p className="text-[10px] font-black italic uppercase tracking-widest">Generating QRIS...</p>
+                <p className="text-[10px] font-black italic uppercase tracking-widest">Membuat Link DANA...</p>
               </div>
             )}
             {status === 'PAID' && (

@@ -53,7 +53,13 @@ const POSView: React.FC<Props> = ({ products, customers, currentUser, onComplete
     if (showScanner) {
       scannerRef.current = new Html5QrcodeScanner(
         "reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        { 
+          fps: 10, 
+          qrbox: { width: 250, height: 250 },
+          videoConstraints: {
+            facingMode: "environment"
+          }
+        },
         /* verbose= */ false
       );
       scannerRef.current.render(onScanSuccess, onScanFailure);
@@ -597,6 +603,9 @@ const POSView: React.FC<Props> = ({ products, customers, currentUser, onComplete
 
       {/* Hidden layout for Print Receipt */}
       <style>{`
+        #reader video {
+          transform: scaleX(1) !important;
+        }
         @media print {
           body * {
             visibility: hidden;

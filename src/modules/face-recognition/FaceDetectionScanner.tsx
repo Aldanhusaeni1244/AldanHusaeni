@@ -61,7 +61,11 @@ const FaceDetectionScanner: React.FC<Props> = ({ employees, mode = 'DETECTION', 
   }, [mode]);
 
   const startVideo = () => {
-    navigator.mediaDevices.getUserMedia({ video: {} })
+    navigator.mediaDevices.getUserMedia({ 
+      video: { 
+        facingMode: 'user'
+      } 
+    })
       .then(stream => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -186,6 +190,7 @@ const FaceDetectionScanner: React.FC<Props> = ({ employees, mode = 'DETECTION', 
           ref={videoRef} 
           autoPlay 
           muted 
+          style={{ transform: 'scaleX(1)' }}
           className="w-full h-full object-cover opacity-60"
         />
         
